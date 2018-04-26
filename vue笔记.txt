@@ -1,0 +1,124 @@
+<script src="https://cdn.jsdelivr.net/npm/vue"></script>
+
+START
+1. attribute不可以用vue中的data， 不可以用{{ }} 这种形式来引用。 应该用绑定的形式， v-bind:href=“”
+2. vue会重新渲染所有数据，包括之前的。例如一个function改变一个值，上边的输出也会变。如果想不变可以用v-once
+3. 标签里的html不会被解读，防止cross-site攻击。 可以用这种<p v-html="finishedLink"><p>来解读finishedLink
+4. Event listen. 在标签里添加event listener可以用v-on:click(或者其他的DOM event）=“function”
+5. v-on:mousemove看鼠标是否移动。event.clientX返回x坐标
+6. listener中的function（）可以有参数，如果想包含event，可以这样 function(var1, var2, $event). 
+7. listener modifier. to stop propagation到上面的function，可以用v-on：mousemove.stop.prevent
+8. 其他的modifier，可以search。例如.keyup.enter.space
+9. 可以直接写js code。可以用其中的data。还有简单的js函数
+10. 之前用函数同步两个parameter，可以用two way binding。 v-model="varName".用这种方法相当于 this.var = event.target.value
+
+DOM INTERACTION
+1. computed.每次都会运行函数，computed中也是以函数形式写的，而且在methods中应该也可以实现，只不过computed中的会缓存之前的数据，不用重新运行
+2. watch. 和computed相对应，watch是对于data来运行的，当data改变，watch function就会执行。同时也可以执行异步callback
+3. v-on:click = @click  v-bind:href = :href
+4. 加一些class属性。 @click="attachRed = !attachRed":class="{red: attachRed}">
+5. 可以把class属性打包放在computed函数中，不要忘了this.data
+6. 可以用input的形式填写class，用v-model结合。还可以给class多个属性 :class="[color, {red:attachRed}]"
+7. 改变css使用方法，设定：style="{backgroundColor: red, ...... }"
+
+CONDITIONALS & REDERING LIST
+1. v-if="true/false"   v-else
+2. 如果不想用div来把几个放在一起if else，可以用template标签<template v-if>
+3. v-if会直接移除DOM， 可以用v-show来直接隐藏，相当于style=“display：none”。但多数还是用v-if
+4. 循环， v-for="animal in animals" {{ animal }}
+5. v-for="(animal, index) in animals" {{animal}}({{index}})
+6. v-for可以用在template中
+7. loop for object. v-for="(value, key, index) in person" 也可以用 person.name
+8. v-for="n in 10" {{n}}  打印1-10
+9. js语法 array.push("data") 有时需要加：key=“”
+
+Vuejs instance
+1. 可以从外面access vue object。 vm1.title = “”
+2. 在tag中添加ref=“somename”， 可以用this.$refs.somename.innerText = ""来改变内容。或者控制somename中其他的值
+3. 可以用vm1.$mount("#app"), 相当于el： “#app”。 $mount() 和其他$开始的值都是vue的自带函数或变量
+4. component and template
+5. Vue Instance <---watch---> Virtual DOM <---update---> DOM
+6. lifecycle: beforeCreate() created() beforeMounte() mounted() beforeUpdate() updated() beforeDestroy() destroyed()
+
+Webpack and Vue CLI
+1. install nodejs
+2. npm install -g vue-cli (npm node package management)
+3. vue init webpack my-project
+4. npm install (dependency install)
+5. npm run dev (run the project)
+6. npm run build (build for production)
+
+Components
+1. register global component: Vue.component('my-comp', { data: function() { return { status: "good" } } } )
+2. register local component: 在vue instance中， components: {'my-comp' : cmp }; var cmp = { object }
+3. <style scoped></style>加上scoped，否则这个css rule是global的，会影响所有dom
+4. 如何在两个component间communicate。 发送方需要绑定数据 <component :name="name"></component>.接收方声明props： ['name'].表明properties
+5. 需要验证传递的信息。 props: { name: { type: String, default: 'string' } }
+6. 从child传递给parent。 如果是array或者object，则直接改动，因为是reference pass。 如果是其他的：
+7. child中this.$emit('eventName', dataValue) parent中@eventName="dataProps=$event"
+8. 也可以直接把parent的function传递给child，这样就可以直接改动parent
+9. 从一个child传值给另一个child，需要中间通过parent。这样可能会麻烦， grandchild1->child2->parent->child3->grandchild2
+10. 方便的方法，用eventBus。首先在main中export const eventBus = new Vue() 创建一个全局export的bus。 之后传递者import {eventBus} from '../main'
+	更改值之后，把值放入bus中。 eventBus.$emit('ageEdit', this.age). 接受者中 import {eventBus} from '../main' 接受 eventBus.$on('ageEdit', (age) => { this.age = age } )
+11. 如果想传递许多html值，绑定值的话很麻烦。vue可以用<slot></slot> reserved word. 发送方只需把html放在component的标签中
+12. style是跟随child component。其他的比如value是在parent
+13. 不同的slot render不同的content。 <slot name="title"></slot>  发送方<h2 slot="title"><h2>
+14. 如果slot没有值，slot中间的值会作为default value
+15. 动态加载不同的component。 <component :is="selectedComponent"></component>
+16. 如果在component之间转换，之前的component会被destroy。如果想保留用 <keep-alive> ..... </kepp-alive>
+17. life cycle hook for component switch. deactivated() activated()
+
+project2
+1. quote posting
+2. 设计时大部分data都可以放在app中
+3. 在for loop中用 @click.native="function" 可以找到确定的那个dom
+4. 在form中用@click.prevent="function"防止提交刷新网页
+
+Form
+1. vue modifier. v-model.lazy当用户点击其他地方时才更新. v-model.number处理成数字
+2. 对于textarea，不会显示多行，用style="white-space: pre"
+3: 对于checkbox，可以用一个数组作为data model。会自动把check的加进数组
+4. 对于radio button。直接绑定一个string data。vue会自动设置
+5. dropdown，在option上一层加上v-model。
+
+Personal Directive
+1. Vue.directive('dir-name', {hookFunction })
+2. hook function包括bind等五个hook
+3. bind (el, binding, vnode) {el.style.backgroundColor = binding.value }
+4. bind (el, binding, vnode) {binding.arg == backgroundColor} html中表示为v-dir-name:backgroundColor="'red'"
+5. 检查modifier，binding.modifiers[modifier-name] html中v-dir-name.modifier-name
+6. 注册local directive. directives: { 'local-directive' : { bind () {}}}
+7. 可以在value中传递object，例如{color: 'green', delay: 3000}.在directive中，用binding.value.color
+
+Filters and Mixins
+1. filters. local: {{ text | filter-name }} export default { filters: { filter-name(value) { return }}}
+2. global: Vue.filter('filter-name', function(value) {return ..} )
+3. 做一个关键字搜索的js例子
+4. Mixins和trait一样。 mixins: [mixin-name]
+
+Animination
+1. Transition.  <transition name="t-name">  .t-name-enter {} .t-name-enter-active{} .t-name-leave {} .t-name-leave-active{}
+2. 一开始就load一次transition 用appear
+3. 好用的css library： https://daneden.github.io/animate.css/
+
+HTTP
+1. vue-resource
+2. firebase
+3. this.$http.get(URL).then(response => {return response.json()}.then(data =>{ ... })
+4. this.$http.post(URL).then(response => { ... }, error => { ... })
+5. 设定root url。 Vue.http.options.root = 'URL'
+6. vue-resource里面的方法，设定
+
+Route
+1. npm install --save vue-route
+2. 参考router这里的project。或者视频
+3. <router-link to="/user"></router-link> 
+4. js code route. this.$route.push('/ddd')
+5. {'path': '/user/:id', component: User}传递参数id. this.$route.params.id
+6. 对于同样的url，需要watch ‘route’。确保传递的值正确
+
+
+
+
+
+
