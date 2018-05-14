@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<!-- saved from url=(0074)http://callistaenterprise.se/blogg/teknik/2017/02/21/go-blog-series-part2/ -->
+<html lang="sv-se" class="wf-adobecaslonpro-n4-active wf-adobecaslonpro-i4-active wf-adobecaslonpro-n6-active wf-futuraptcondensed-n4-active wf-futuraptcondensed-n5-active wf-futuraptcondensed-n7-active wf-sourcecodepro-n7-active wf-sourcecodepro-n4-active wf-active"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+    
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="Callista Enterprise - seniora IT-arkitekter och systemutvecklare inom Java, öppen källkod, agil utveckling och systemintegration">
+    <!--<meta name="viewport" content="width=device-width, initial-scale=1">-->
+    <meta name="viewport" content="initial-scale=1.0001, minimum-scale=1.0001, maximum-scale=1.0001, user-scalable=no">
+
+    <title>
+        Go microservices, part 2 - building our first service | 
+        Callista Enterprise
+    </title>
+
+    <link rel="stylesheet" href="./Go microservices, part 2 - building our first service _ Callista Enterprise_files/style.css">
+    <link rel="alternate" type="application/rss+xml" title="RSS Feed for callistaenterprise.se" href="http://callistaenterprise.se/feed.xml">
+
+    <!--[if lte IE 8]>
+    <style>* { display: none !important; }</style>
+    <meta http-equiv="refresh" content="0; url=/oldie/"/>
+    <![endif]-->
+
+    <script async="" src="./Go microservices, part 2 - building our first service _ Callista Enterprise_files/analytics.js"></script><script src="./Go microservices, part 2 - building our first service _ Callista Enterprise_files/804675599711872" async=""></script><script async="" src="./Go microservices, part 2 - building our first service _ Callista Enterprise_files/fbevents.js"></script><script type="text/javascript" src="./Go microservices, part 2 - building our first service _ Callista Enterprise_files/kig5egm.js"></script>
+    <style type="text/css">.tk-adobe-caslon-pro{font-family:"adobe-caslon-pro",serif;}.tk-futura-pt-condensed{font-family:"futura-pt-condensed",sans-serif;}.tk-source-code-pro{font-family:"source-code-pro",sans-serif;}</style><style type="text/css">@font-face{font-family:tk-adobe-caslon-pro-n4;src:url(https://use.typekit.net/af/85e1af/000000000000000000012d68/27/l?subset_id=2&fvd=n4&v=3) format("woff2"),url(https://use.typekit.net/af/85e1af/000000000000000000012d68/27/d?subset_id=2&fvd=n4&v=3) format("woff"),url(https://use.typekit.net/af/85e1af/000000000000000000012d68/27/a?subset_id=2&fvd=n4&v=3) format("opentype");font-weight:400;font-style:normal;}@font-face{font-family:tk-adobe-caslon-pro-i4;src:url(https://use.typekit.net/af/9a86f7/000000000000000000012d67/27/l?subset_id=2&fvd=i4&v=3) format("woff2"),url(https://use.typekit.net/af/9a86f7/000000000000000000012d67/27/d?subset_id=2&fvd=i4&v=3) format("woff"),url(https://use.typekit.net/af/9a86f7/000000000000000000012d67/27/a?subset_id=2&fvd=i4&v=3) format("opentype");font-weight:400;font-style:italic;}@font-face{font-family:tk-adobe-caslon-pro-n6;src:url(https://use.typekit.net/af/360b9a/000000000000000000012d69/27/l?subset_id=2&fvd=n6&v=3) format("woff2"),url(https://use.typekit.net/af/360b9a/000000000000000000012d69/27/d?subset_id=2&fvd=n6&v=3) format("woff"),url(https://use.typekit.net/af/360b9a/000000000000000000012d69/27/a?subset_id=2&fvd=n6&v=3) format("opentype");font-weight:600;font-style:normal;}@font-face{font-family:tk-futura-pt-condensed-n4;src:url(https://use.typekit.net/af/49ff56/000000000000000000012039/27/l?subset_id=2&fvd=n4&v=3) format("woff2"),url(https://use.typekit.net/af/49ff56/000000000000000000012039/27/d?subset_id=2&fvd=n4&v=3) format("woff"),url(https://use.typekit.net/af/49ff56/000000000000000000012039/27/a?subset_id=2&fvd=n4&v=3) format("opentype");font-weight:400;font-style:normal;}@font-face{font-family:tk-futura-pt-condensed-n5;src:url(https://use.typekit.net/af/b97861/00000000000000000001203b/27/l?subset_id=2&fvd=n5&v=3) format("woff2"),url(https://use.typekit.net/af/b97861/00000000000000000001203b/27/d?subset_id=2&fvd=n5&v=3) format("woff"),url(https://use.typekit.net/af/b97861/00000000000000000001203b/27/a?subset_id=2&fvd=n5&v=3) format("opentype");font-weight:500;font-style:normal;}@font-face{font-family:tk-futura-pt-condensed-n7;src:url(https://use.typekit.net/af/f7aaa0/00000000000000000001203d/27/l?subset_id=2&fvd=n7&v=3) format("woff2"),url(https://use.typekit.net/af/f7aaa0/00000000000000000001203d/27/d?subset_id=2&fvd=n7&v=3) format("woff"),url(https://use.typekit.net/af/f7aaa0/00000000000000000001203d/27/a?subset_id=2&fvd=n7&v=3) format("opentype");font-weight:700;font-style:normal;}@font-face{font-family:tk-source-code-pro-n7;src:url(https://use.typekit.net/af/c4d2a0/0000000000000000000179d5/27/l?subset_id=2&fvd=n7&v=3) format("woff2"),url(https://use.typekit.net/af/c4d2a0/0000000000000000000179d5/27/d?subset_id=2&fvd=n7&v=3) format("woff"),url(https://use.typekit.net/af/c4d2a0/0000000000000000000179d5/27/a?subset_id=2&fvd=n7&v=3) format("opentype");font-weight:700;font-style:normal;}@font-face{font-family:tk-source-code-pro-n4;src:url(https://use.typekit.net/af/785643/0000000000000000000179cf/27/l?subset_id=2&fvd=n4&v=3) format("woff2"),url(https://use.typekit.net/af/785643/0000000000000000000179cf/27/d?subset_id=2&fvd=n4&v=3) format("woff"),url(https://use.typekit.net/af/785643/0000000000000000000179cf/27/a?subset_id=2&fvd=n4&v=3) format("opentype");font-weight:400;font-style:normal;}</style><script type="text/javascript">
+        try {
+            Typekit.load({ async: true });
+        } catch (e) {
+        }
+    </script>
+
+    <!-- Facebook Pixel Code -->
+    <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window,document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+     fbq('init', '804675599711872');
+     fbq('track', 'PageView');
+    </script>
+    <noscript>
+     &lt;img height="1" width="1" src="https://www.facebook.com/tr?id=804675599711872&amp;ev=PageView&amp;noscript=1"/&gt;
+    </noscript>
+    <!-- End Facebook Pixel Code -->
+
+<style type="text/css">@font-face{font-family:adobe-caslon-pro;src:url(https://use.typekit.net/af/85e1af/000000000000000000012d68/27/l?subset_id=2&fvd=n4&v=3) format("woff2"),url(https://use.typekit.net/af/85e1af/000000000000000000012d68/27/d?subset_id=2&fvd=n4&v=3) format("woff"),url(https://use.typekit.net/af/85e1af/000000000000000000012d68/27/a?subset_id=2&fvd=n4&v=3) format("opentype");font-weight:400;font-style:normal;}@font-face{font-family:adobe-caslon-pro;src:url(https://use.typekit.net/af/9a86f7/000000000000000000012d67/27/l?subset_id=2&fvd=i4&v=3) format("woff2"),url(https://use.typekit.net/af/9a86f7/000000000000000000012d67/27/d?subset_id=2&fvd=i4&v=3) format("woff"),url(https://use.typekit.net/af/9a86f7/000000000000000000012d67/27/a?subset_id=2&fvd=i4&v=3) format("opentype");font-weight:400;font-style:italic;}@font-face{font-family:adobe-caslon-pro;src:url(https://use.typekit.net/af/360b9a/000000000000000000012d69/27/l?subset_id=2&fvd=n6&v=3) format("woff2"),url(https://use.typekit.net/af/360b9a/000000000000000000012d69/27/d?subset_id=2&fvd=n6&v=3) format("woff"),url(https://use.typekit.net/af/360b9a/000000000000000000012d69/27/a?subset_id=2&fvd=n6&v=3) format("opentype");font-weight:600;font-style:normal;}@font-face{font-family:futura-pt-condensed;src:url(https://use.typekit.net/af/49ff56/000000000000000000012039/27/l?subset_id=2&fvd=n4&v=3) format("woff2"),url(https://use.typekit.net/af/49ff56/000000000000000000012039/27/d?subset_id=2&fvd=n4&v=3) format("woff"),url(https://use.typekit.net/af/49ff56/000000000000000000012039/27/a?subset_id=2&fvd=n4&v=3) format("opentype");font-weight:400;font-style:normal;}@font-face{font-family:futura-pt-condensed;src:url(https://use.typekit.net/af/b97861/00000000000000000001203b/27/l?subset_id=2&fvd=n5&v=3) format("woff2"),url(https://use.typekit.net/af/b97861/00000000000000000001203b/27/d?subset_id=2&fvd=n5&v=3) format("woff"),url(https://use.typekit.net/af/b97861/00000000000000000001203b/27/a?subset_id=2&fvd=n5&v=3) format("opentype");font-weight:500;font-style:normal;}@font-face{font-family:futura-pt-condensed;src:url(https://use.typekit.net/af/f7aaa0/00000000000000000001203d/27/l?subset_id=2&fvd=n7&v=3) format("woff2"),url(https://use.typekit.net/af/f7aaa0/00000000000000000001203d/27/d?subset_id=2&fvd=n7&v=3) format("woff"),url(https://use.typekit.net/af/f7aaa0/00000000000000000001203d/27/a?subset_id=2&fvd=n7&v=3) format("opentype");font-weight:700;font-style:normal;}@font-face{font-family:source-code-pro;src:url(https://use.typekit.net/af/c4d2a0/0000000000000000000179d5/27/l?subset_id=2&fvd=n7&v=3) format("woff2"),url(https://use.typekit.net/af/c4d2a0/0000000000000000000179d5/27/d?subset_id=2&fvd=n7&v=3) format("woff"),url(https://use.typekit.net/af/c4d2a0/0000000000000000000179d5/27/a?subset_id=2&fvd=n7&v=3) format("opentype");font-weight:700;font-style:normal;}@font-face{font-family:source-code-pro;src:url(https://use.typekit.net/af/785643/0000000000000000000179cf/27/l?subset_id=2&fvd=n4&v=3) format("woff2"),url(https://use.typekit.net/af/785643/0000000000000000000179cf/27/d?subset_id=2&fvd=n4&v=3) format("woff"),url(https://use.typekit.net/af/785643/0000000000000000000179cf/27/a?subset_id=2&fvd=n4&v=3) format("opentype");font-weight:400;font-style:normal;}</style><script type="text/javascript" async="" src="./Go microservices, part 2 - building our first service _ Callista Enterprise_files/embed.js"></script><link rel="preload" as="style" href="https://c.disquscdn.com/next/embed/styles/lounge.188f59a1df04c219bf32da7f76545092.css"><link rel="preload" as="script" href="https://c.disquscdn.com/next/embed/common.bundle.037f55c32651d22255e90738c195e946.js"><link rel="preload" as="script" href="https://c.disquscdn.com/next/embed/lounge.bundle.2fd6d206c06cd51584499fe8219aa635.js"><link rel="preload" as="script" href="https://disqus.com/next/config.js"><script src="./Go microservices, part 2 - building our first service _ Callista Enterprise_files/alfalfa.4a5fcca1fe50a757044dfd331b660625.js" async="" charset="UTF-8"></script></head>
+<body>
+
+    <header class="ce-header">
+    <nav>
+        <a class="ce-logotype" href="http://callistaenterprise.se/">
+            <img alt="Callista Enterprise" src="./Go microservices, part 2 - building our first service _ Callista Enterprise_files/callista_small.svg">
+        </a>
+        <ul id="menu-primary" class="ce-menu-primary">
+            
+            
+            <li><a href="http://callistaenterprise.se/om/">Om oss</a></li>
+            
+            
+            
+            <li><a href="http://callistaenterprise.se/erbjudanden/">Erbjudanden</a></li>
+            
+            
+            
+            <li><a href="http://callistaenterprise.se/event/">Event</a></li>
+            
+            
+            
+            <li><a class="ce-active" href="http://callistaenterprise.se/blogg/">Blogg</a></li>
+            
+            
+        </ul>
+        <a id="menu" class="ce-menu-icon" href="http://callistaenterprise.se/blogg/teknik/2017/02/21/go-blog-series-part2/#">
+            <img alt="Visa meny" src="./Go microservices, part 2 - building our first service _ Callista Enterprise_files/menu.png">
+        </a>
+        <a class="ce-search-icon" href="http://callistaenterprise.se/blogg/teknik/2017/02/21/go-blog-series-part2/#">
+            <img alt="Sök" src="./Go microservices, part 2 - building our first service _ Callista Enterprise_files/search.png">
+        </a>
+        <ul class="ce-menu-secondary">
+            
+            <li><a href="http://callistaenterprise.se/english/">English</a></li>
+            
+            <li><a href="http://callistaenterprise.se/om/jobb/">Bli en av oss</a></li>
+            
+            <li><a href="http://callistaenterprise.se/om/#kontakt">Kontakt</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+    <div class="ce-main">
+        
+<nav class="ce-menu-submenu">
+    <ul>
+
+        
+
+        
+
+        
+
+        
+        
+        
+        <li><a href="http://callistaenterprise.se/blogg/">Alla inlägg</a></li>
+        
+        
+        
+        <li><a href="http://callistaenterprise.se/blogg/callista/">Callista</a></li>
+        
+        
+        
+        <li><a href="http://callistaenterprise.se/blogg/presentationer/">Presentationer</a></li>
+        
+        
+        
+        <li><a class="ce-active" href="http://callistaenterprise.se/blogg/teknik/">Teknik</a></li>
+        
+        
+        
+        <li><a href="http://callistaenterprise.se/blogg/notiser/">Notiser</a></li>
+        
+        
+        
+
+    </ul>
+</nav>
+
+
+
+<section class="ce-section">
+    <div class="ce-content">
+        
+        
+
+        
+        
+
+        <div class="ce-blog">
+          <div class="ce-blog-ingress">
+            Välkommen till Callista Enterprise blogg - här finns tekniska artiklar, presentationer och nyheter om arkitektur och systemutveckling.
+            Håll dig uppdaterad genom att följa oss på <a href="http://twitter.com/callistaent">Twitter</a>.
+          </div>
+        </div>
+
+        <article class="ce-blog">
+            <header>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <img alt="Callista Enterprise medarbetare Erik Lupander" src="./Go microservices, part 2 - building our first service _ Callista Enterprise_files/eriklupander_mini.png">
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <h2>
+        <a href="http://callistaenterprise.se/blogg/teknik/2017/02/21/go-blog-series-part2/">Go microservices, part 2 - building our first service</a>
+        
+        
+    </h2>
+    <h3>
+        <time datetime="2017-02-21T00:00:00+00:00">
+            21 February 2017
+        </time>
+        //
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+
+        
+        
+        <a href="http://callistaenterprise.se/om/medarbetare/eriklupander/">Erik Lupander</a>
+        
+
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    </h3>
+    
+</header>
+
+
+
+
+<p>In part 2 of this blog series, we will:</p>
+<ul>
+  <li>Set up our Go workspace</li>
+  <li>Build our first microservice</li>
+  <li>Serve some JSON over HTTP using Gorilla Web Toolkit.</li>
+</ul>
+
+<p>To stay focused on the Go fundamentals, we’ll wait a bit with deploying it on Docker Swarm.</p>
+
+<h1>Introduction</h1>
+<p>While serving JSON over HTTP isn’t the only option for inter-service or external communication, we’ll focus on HTTP and JSON in this blog series. Using RPC mechanisms and binary messaging formats such as <a href="https://developers.google.com/protocol-buffers/">Protocol Buffers</a> can be a very interesting option for inter-service communication or for external communication when the external consumer of your service(s) is another system. Go has built-in RPC support and gRPC is absolutely worth looking at as well. However, for now we’ll focus on HTTP provided by the built-in <a href="https://golang.org/pkg/net/http/">http package</a> and <a href="http://www.gorillatoolkit.org/">Gorilla Web Toolkit</a>.</p>
+
+<p>Another aspect to take into account is that many useful frameworks (security, tracing, …) relies on HTTP headers to transfer state about the ongoing request between participants. Examples we’ll see in later blog posts is how we’ll pass correlation ID’s and OAuth bearers in HTTP headers. While other protocols certainly supports similar mechanisms, many frameworks are built with HTTP in mind and I’d rather try to keep our integrations as straightforward as possible.</p>
+
+<h1>Setting up a Go Workspace</h1>
+<p>Feel free to skip the section if you’re already a seasoned Go dev. In my humble opinion, the structure of a Go workspace took some time getting used to. Where I’m used to typically having the root of a project as workspace root, Go conventions about how to properly structure a workspace so the go compiler can find source codes and dependencies is somewhat unorthodox, placing your source code under the <em>/src</em> folder in a subtree named after its source control path. I strongly recommend reading the <a href="https://golang.org/doc/code.html">official guide</a> and <a href="https://astaxie.gitbooks.io/build-web-application-with-golang/content/en/01.2.html">this article</a> before getting started. I wish I had.</p>
+
+<h2>Installing the SDK</h2>
+<p>Before writing our first lines of code (or checking out the complete source), we’ll need to install the Go SDK. I suggest following <a href="https://golang.org/doc/install">the official guide</a>, it should be straightforward enough.</p>
+
+<h2>Setting up a development environment.</h2>
+<p>In this blog series, we’ll be using the built-in Go SDK tools we just installed for building and running, as well as following the idiomatic way of setting up a Go workspace.</p>
+
+<h3>1. Create a root folder for your workspace</h3>
+<p>All commands are based on a OS X or Linux dev environment. If you’re running Windows, please adapt the instructions as necessary.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>mkdir ~/goworkspace
+cd goworkspace
+export GOPATH=`pwd`
+</code></pre></div></div>
+
+<p>Here we created a root folder and then assigned the environment variable <a href="https://github.com/golang/go/wiki/GOPATH">GOPATH</a> to that folder. This is the root of our workspace under which all Go source we write or 3rd party libraries we’ll use will end up. I recommend adding this GOPATH to your <em>.bash_profile</em> or similar so you don’t have to reset it each time you open up a new console window.</p>
+
+<h3>2. Create folders and files for our first project</h3>
+<p>Given that we’re in the root of the workspace (e.g. the same folder as specified in the GOPATH env var), execute the following statements:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>mkdir -p src/github.com/callistaenterprise
+</code></pre></div></div>
+
+<p>If you want to follow along and code stuff yourself, execute these commands:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cd src/github.com/callistaenterprise
+mkdir -p goblog/accountservice
+cd goblog/accountservice
+touch main.go
+mkdir service
+</code></pre></div></div>
+
+<p>OR - you can clone the git repository containing the sample code and switch to branch P2. From the <em>src/github.com/callistaenterprise</em> folder you created above, execute:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git clone <a class="vglnk" href="https://github.com/callistaenterprise/goblog.git" rel="nofollow"><span>https</span><span>://</span><span>github</span><span>.</span><span>com</span><span>/</span><span>callistaenterprise</span><span>/</span><span>goblog</span><span>.</span><span>git</span></a>
+cd goblog
+git checkout P2
+</code></pre></div></div>
+
+<p>Remember - <em>$GOPATH/src/github.com/callistaenterprise/goblog</em> is the root folder of <em>our project</em> and what’s actually stored on github.</p>
+
+<p>Now we should have enough structure to easily get us started. Open up <em>main.go</em> in your Go IDE of choice. I’m using IntelliJ IDEA with their excellent Golang plugin when writing the code for this blog series. Other popular choices seems to be <a href="https://marketplace.eclipse.org/category/free-tagging/golang">Eclipse (with Go plugin)</a>, <a href="https://atom.io/packages/go-plus">Atom</a>, <a href="https://github.com/DisposaBoy/GoSublime">Sublime</a>, <a href="https://github.com/fatih/vim-go">vim</a> or JetBrains new dedicated commercial <a href="https://www.jetbrains.com/go/">Gogland</a> IDE.</p>
+
+<h1>Creating the service - main.go</h1>
+<p>The <em>main</em> function in Go is exactly what you expect it to be - the entry point of our Go programs. Let’s create just enough code to get something we can actually build and run:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">main</span>
+
+<span class="n">import</span> <span class="p">(</span>
+        <span class="s2">"fmt"</span>
+        <span class="p">)</span>
+        
+<span class="n">var</span> <span class="n">appName</span> <span class="p">=</span> <span class="s2">"accountservice"</span>
+
+<span class="n">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">fmt</span><span class="p">.</span><span class="n">Printf</span><span class="p">(</span><span class="s2">"Starting %v</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="n">appName</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Now, let’s run it. Make sure you’re in the folder corresponding to your <em>$GOPATH/src/github.com/callistaenterprise/goblog/accountservice</em></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&gt; go run *.go
+Starting accountservice
+&gt;
+</code></pre></div></div>
+
+<p>That’s it! This program will just print and then exit. Time to add our very first HTTP endpoint!</p>
+
+<h1>Building an HTTP web server</h1>
+
+<p><em>Note: The basics of these HTTP examples were derived from an excellent <a href="http://thenewstack.io/make-a-restful-json-api-go/">blog post</a></em></p>
+
+<p>To keep things neat, we’ll put all HTTP service related files into the <em>service</em> folder.</p>
+
+<h3>Bootstrap the HTTP server</h3>
+
+<p>Create the file <em>webserver.go</em> inside the <em>/services</em> folder:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">service</span>
+
+<span class="n">import</span> <span class="p">(</span>
+        <span class="s2">"net/http"</span>
+        <span class="s2">"log"</span>
+<span class="p">)</span>
+
+<span class="n">func</span> <span class="n">StartWebServer</span><span class="p">(</span><span class="n">port</span> <span class="k">string</span><span class="p">)</span> <span class="p">{</span>
+
+        <span class="nb">log</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="s2">"Starting HTTP service at "</span> <span class="p">+</span> <span class="n">port</span><span class="p">)</span>
+        <span class="n">err</span> <span class="p">:=</span> <span class="n">http</span><span class="p">.</span><span class="n">ListenAndServe</span><span class="p">(</span><span class="s2">":"</span> <span class="p">+</span> <span class="n">port</span><span class="p">,</span> <span class="n">nil</span><span class="p">)</span>    <span class="p">//</span> <span class="n">Goroutine</span> <span class="n">will</span> <span class="n">block</span> <span class="n">here</span>
+
+        <span class="k">if</span> <span class="n">err</span> <span class="c1">!= nil {
+</span>                <span class="nb">log</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="s2">"An error occured starting HTTP listener at port "</span> <span class="p">+</span> <span class="n">port</span><span class="p">)</span>
+                <span class="nb">log</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="s2">"Error: "</span> <span class="p">+</span> <span class="n">err</span><span class="p">.</span><span class="n">Error</span><span class="p">())</span>
+        <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>We’re using the built-in <em>net/http</em> package to execute <em>ListenAndServe</em> which starts a HTTP server on the specified port.</p>
+
+<p>Update <em>main.go</em> so we call the <em>StartWebServer</em> function with a (for now) hard-coded port:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">main</span>
+
+<span class="n">import</span> <span class="p">(</span>
+        <span class="s2">"fmt"</span>
+        <span class="s2">"<a class="vglnk" href="http://github.com/callistaenterprise/goblog/accountservice/service" rel="nofollow"><span>github</span><span>.</span><span>com</span><span>/</span><span>callistaenterprise</span><span>/</span><span>goblog</span><span>/</span><span>accountservice</span><span>/</span><span>service</span></a>"</span>  <span class="p">//</span> <span class="n">NEW</span>
+<span class="p">)</span>
+
+<span class="n">var</span> <span class="n">appName</span> <span class="p">=</span> <span class="s2">"accountservice"</span>
+
+<span class="n">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">fmt</span><span class="p">.</span><span class="n">Printf</span><span class="p">(</span><span class="s2">"Starting %v</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="n">appName</span><span class="p">)</span>
+        <span class="n">service</span><span class="p">.</span><span class="n">StartWebServer</span><span class="p">(</span><span class="s2">"6767"</span><span class="p">)</span>           <span class="p">//</span> <span class="n">NEW</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Run the program again:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&gt; go run *.go
+Starting accountservice
+2017/01/30 19:36:00 Starting HTTP service at 6767
+</code></pre></div></div>
+
+<p>We now have a simple HTTP server listening to port 6767 on localhost. <a href="https://curl.haxx.se/">Curl</a> it:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&gt; curl <a class="vglnk" href="http://localhost:6767/" rel="nofollow"><span>http</span><span>://</span><span>localhost</span><span>:</span><span>6767</span></a>
+404 page not found
+</code></pre></div></div>
+
+<p>A 404 is exactly what we’re expecting as we havn’t declared any routes yet.</p>
+
+<p>Stop the Web server by pressing Ctrl+C.</p>
+
+<h2>Adding our first route</h2>
+<p>It’s time to actually serve something from our server. We’ll start by declaring our very first <a href="http://www.gorillatoolkit.org/pkg/mux#Route">route</a> using a Go <a href="https://gobyexample.com/structs">struct</a> that we’ll use to populate the Gorilla router. In the <em>service</em> folder, create <em>routes.go</em>:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">service</span>
+
+<span class="n">import</span> <span class="s2">"net/http"</span>
+
+<span class="p">//</span> <span class="n">Defines</span> <span class="n">a</span> <span class="n">single</span> <span class="n">route</span><span class="p">,</span> <span class="n">e</span><span class="p">.</span><span class="n">g</span><span class="p">.</span> <span class="n">a</span> <span class="n">human</span> <span class="n">readable</span> <span class="n">name</span><span class="p">,</span> <span class="n">HTTP</span> <span class="n">method</span> <span class="k">and</span> <span class="n">the</span>
+<span class="p">//</span> <span class="n">pattern</span> <span class="n">the</span> <span class="k">function</span> <span class="n">that</span> <span class="n">will</span> <span class="n">execute</span> <span class="n">when</span> <span class="n">the</span> <span class="n">route</span> <span class="n">is</span> <span class="n">called</span><span class="p">.</span>
+<span class="n">type</span> <span class="n">Route</span> <span class="n">struct</span> <span class="p">{</span>
+	<span class="n">Name</span>        <span class="k">string</span>
+	<span class="n">Method</span>      <span class="k">string</span>
+	<span class="n">Pattern</span>     <span class="k">string</span>
+	<span class="n">HandlerFunc</span> <span class="n">http</span><span class="p">.</span><span class="n">HandlerFunc</span>
+<span class="p">}</span>
+
+<span class="p">//</span> <span class="n">Defines</span> <span class="n">the</span> <span class="n">type</span> <span class="n">Routes</span> <span class="n">which</span> <span class="n">is</span> <span class="n">just</span> <span class="n">an</span> <span class="k">array</span> <span class="p">(</span><span class="n">slice</span><span class="p">)</span> <span class="k">of</span> <span class="n">Route</span> <span class="n">structs</span><span class="p">.</span>
+<span class="n">type</span> <span class="n">Routes</span> <span class="p">[]</span><span class="n">Route</span>
+
+<span class="p">//</span> <span class="n">Initialize</span> <span class="n">our</span> <span class="n">routes</span>
+<span class="n">var</span> <span class="n">routes</span> <span class="p">=</span> <span class="n">Routes</span><span class="p">{</span>
+
+	<span class="n">Route</span><span class="p">{</span>
+		<span class="s2">"GetAccount"</span><span class="p">,</span>                                     <span class="p">//</span> <span class="n">Name</span>
+		<span class="s2">"GET"</span><span class="p">,</span>                                            <span class="p">//</span> <span class="n">HTTP</span> <span class="n">method</span>
+		<span class="s2">"/accounts/{accountId}"</span><span class="p">,</span>                          <span class="p">//</span> <span class="n">Route</span> <span class="n">pattern</span>
+		<span class="n">func</span><span class="p">(</span><span class="n">w</span> <span class="n">http</span><span class="p">.</span><span class="n">ResponseWriter</span><span class="p">,</span> <span class="n">r</span> <span class="p">*</span><span class="n">http</span><span class="p">.</span><span class="n">Request</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">w</span><span class="p">.</span><span class="n">Header</span><span class="p">().</span><span class="k">Set</span><span class="p">(</span><span class="s2">"Content-Type"</span><span class="p">,</span> <span class="s2">"application/json; charset=UTF-8"</span><span class="p">)</span>
+            <span class="n">w</span><span class="p">.</span><span class="n">Write</span><span class="p">([]</span><span class="n">byte</span><span class="p">(</span><span class="s2">"{</span><span class="se">\"</span><span class="s2">result</span><span class="se">\"</span><span class="s2">:</span><span class="se">\"</span><span class="s2">OK</span><span class="se">\"</span><span class="s2">}"</span><span class="p">))</span>
+        <span class="p">},</span>
+	<span class="p">},</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>In the snippet above, we declared the path <em>/accounts/{accountId}</em> which we later can curl. Gorilla also supports complex routing with regexp pattern matching, schemes, methods, queries, headers values etc. so one is certainly not limited to just paths and path parameters.</p>
+
+<p>For now, we will just return a tiny JSON message we’ve hard-coded as response:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>   {"result":"OK"}
+</code></pre></div></div>
+
+<p>We’ll also need some boilerplate code that hooks up the actual <a href="http://www.gorillatoolkit.org/pkg/mux#overview">Gorilla Router</a> to the routes we declared. In <em>service</em> folder, create <em>router.go</em>:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">service</span>
+
+<span class="n">import</span> <span class="p">(</span>
+	<span class="s2">"<a class="vglnk" href="http://github.com/gorilla/mux" rel="nofollow"><span>github</span><span>.</span><span>com</span><span>/</span><span>gorilla</span><span>/</span><span>mux</span></a>"</span>
+<span class="p">)</span>
+
+<span class="p">//</span> <span class="k">Function</span> <span class="n">that</span> <span class="n">returns</span> <span class="n">a</span> <span class="n">pointer</span> <span class="k">to</span> <span class="n">a</span> <span class="n">mux</span><span class="p">.</span><span class="n">Router</span> <span class="n">we</span> <span class="n">can</span> <span class="n">use</span> <span class="k">as</span> <span class="n">a</span> <span class="n">handler</span><span class="p">.</span>
+<span class="n">func</span> <span class="n">NewRouter</span><span class="p">()</span> <span class="p">*</span><span class="n">mux</span><span class="p">.</span><span class="n">Router</span> <span class="p">{</span>
+
+    <span class="p">//</span> <span class="n">Create</span> <span class="n">an</span> <span class="n">instance</span> <span class="k">of</span> <span class="n">the</span> <span class="n">Gorilla</span> <span class="n">router</span>
+	<span class="n">router</span> <span class="p">:=</span> <span class="n">mux</span><span class="p">.</span><span class="n">NewRouter</span><span class="p">().</span><span class="n">StrictSlash</span><span class="p">(</span><span class="nb">true</span><span class="p">)</span>
+	
+	<span class="p">//</span> <span class="n">Iterate</span> <span class="n">over</span> <span class="n">the</span> <span class="n">routes</span> <span class="n">we</span> <span class="n">declared</span> <span class="k">in</span> <span class="n">routes</span><span class="p">.</span><span class="n">go</span> <span class="k">and</span> <span class="n">attach</span> <span class="n">them</span> <span class="k">to</span> <span class="n">the</span> <span class="n">router</span> <span class="n">instance</span>
+	<span class="n">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">route</span> <span class="p">:=</span> <span class="k">range</span> <span class="n">routes</span> <span class="p">{</span>
+	    
+	    <span class="p">//</span> <span class="n">Attach</span> <span class="n">each</span> <span class="n">route</span><span class="p">,</span> <span class="k">uses</span> <span class="n">a</span> <span class="n">Builder</span><span class="p">-</span><span class="n">like</span> <span class="n">pattern</span> <span class="k">to</span> <span class="k">set</span> <span class="n">each</span> <span class="n">route</span> <span class="n">up</span><span class="p">.</span>
+		<span class="n">router</span><span class="p">.</span><span class="n">Methods</span><span class="p">(</span><span class="n">route</span><span class="p">.</span><span class="n">Method</span><span class="p">).</span>
+                <span class="n">Path</span><span class="p">(</span><span class="n">route</span><span class="p">.</span><span class="n">Pattern</span><span class="p">).</span>
+                <span class="n">Name</span><span class="p">(</span><span class="n">route</span><span class="p">.</span><span class="n">Name</span><span class="p">).</span>
+                <span class="n">Handler</span><span class="p">(</span><span class="n">route</span><span class="p">.</span><span class="n">HandlerFunc</span><span class="p">)</span>
+	<span class="p">}</span>
+	<span class="n">return</span> <span class="n">router</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h4>Importing dependencies</h4>
+<p>In the import section for <em>router.go</em> we see that we have declared a dependency on the <em><a class="vglnk" href="http://github.com/gorilla/mux" rel="nofollow"><span>github</span><span>.</span><span>com</span><span>/</span><span>gorilla</span><span>/</span><span>mux</span></a></em> package. See <a href="https://github.com/golang/go/wiki/GOPATH#repository-integration-and-creating-go-gettable-projects">here</a> for a good explanation on how go dependencies are fetched using <em>go get</em>.</p>
+
+<p>In order for the above file to compile and run, we’ll need to use <em>go get</em> to fetch the declared package(s) into our workspace:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&gt; go get
+</code></pre></div></div>
+
+<p>This may take a little while since the Go tool is actually downloading all the source code required by the gorilla/mux package from <a class="vglnk" href="https://github.com/gorilla/mux" rel="nofollow"><span>https</span><span>://</span><span>github</span><span>.</span><span>com</span><span>/</span><span>gorilla</span><span>/</span><span>mux</span></a>. This source code will end up in <em>$GOPATH/src/github.com/gorilla/mux</em> on your local file system and it will be built into your statically linked binary.</p>
+
+<h4>Wrapping up</h4>
+<p>Now, revisit <em>webserver.go</em> and add the two following lines at the start of the StartWebServer function:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>func StartWebServer(port string) {
+
+        r := NewRouter()             // NEW
+        http.Handle("/", r)          // NEW
+</code></pre></div></div>
+
+<p>This attaches the Router we just created to the http.Handle for the root path <em>/</em>. Let’s compile and run the server again.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&gt; go run *.go
+Starting accountservice
+2017/01/31 15:15:57 Starting HTTP service at 6767
+</code></pre></div></div>
+
+<p>Try to curl:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&gt; curl <a class="vglnk" href="http://localhost:6767/accounts/10000" rel="nofollow"><span>http</span><span>://</span><span>localhost</span><span>:</span><span>6767</span><span>/</span><span>accounts</span><span>/</span><span>10000</span></a>
+  {"result":"OK"}
+</code></pre></div></div>
+
+<p>Nice! We’ve just created our first HTTP service!</p>
+
+<h1>Footprint and performance</h1>
+<p>Given that we’re exploring Go-based microservices due to alleged awesome memory footprint and good performance, we’d better do a quick benchmark to see how this performs. I’ve developed a simple <a href="http://gatling.io/">Gatling</a> test that hammers <em>/accounts/{accountId}</em> with GET requests. If you’ve checked out the source for this part, you can find the load test in the <em>/goblog/loadtest</em> folder. Or you can look at it on <a href="https://github.com/callistaenterprise/goblog/tree/master/loadtest">github</a>.</p>
+
+<h3>Running the load test yourself</h3>
+<p>If you want to run the load-test yourself, make sure the “accountservice” is up and running on localhost and that you have cloned the source and checked out branch P2. You’ll also need to have a Java Runtime Environment and <a href="https://maven.apache.org/">Apache Maven</a> installed.</p>
+
+<p>Change directory to the <em>/goblog/loadtest</em> folder and execute the following command from the command-line:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&gt; mvn gatling:execute -Dusers=1000 -Dduration=30 -DbaseUrl=<a class="vglnk" href="http://localhost:6767/" rel="nofollow"><span>http</span><span>://</span><span>localhost</span><span>:</span><span>6767</span></a>
+</code></pre></div></div>
+
+<p>This should start and run the test. The arguments are:</p>
+
+<ul>
+  <li>users: Number of concurrent users the test will simulate</li>
+  <li>duration: For how many seconds the test will run</li>
+  <li>baseUrl: Base path to the host providing the service we’re testing. When we move over to Docker Swarm, the baseUrl will need to be changed to the public IP of the Swarm. More on that in <a href="http://callistaenterprise.se/blogg/teknik/2017/03/09/go-blog-series-part5">part 5</a>.</li>
+</ul>
+
+<p>After the test has finished, it writes results to the console windows as well as a fancy HTML report into <em>target/gatling/results/</em>.</p>
+
+<h3>Results</h3>
+
+<p><em>Note: Later on, when the services we’re building are running inside Docker containers on Docker Swarm, we’ll do all benchmarks and metrics capturing there. Until then, my mid-2014 MacBook Pro will have to suffice.</em></p>
+
+<p><em>Before</em> starting the load test, the memory consumption of the Go-based “accountservice” is as follows according to the OS X task manager:</p>
+
+<p><img src="./Go microservices, part 2 - building our first service _ Callista Enterprise_files/part2-memuse.png" alt="mem use"></p>
+
+<p>1.8 mb, not bad! Let’s start the Gatling test running 1K req/s. Remember that this is a <em>very</em> naive implementation that just responds with a hard-coded string.</p>
+
+<h3>Memory use</h3>
+<p><img src="./Go microservices, part 2 - building our first service _ Callista Enterprise_files/part2-memuse2.png" alt="mem use2">
+Ok, serving 1K req/s makes the “accountservice” consume about 28 mb of RAM. That’s still perhaps 1/10th of what a Spring Boot application uses at startup. It will be very interesting to see how this figures changes once we start to add some real functionality to it.</p>
+
+<h3>Performance and CPU usage</h3>
+<p><img src="./Go microservices, part 2 - building our first service _ Callista Enterprise_files/part2-cpuuse.png" alt="cpu use">
+Serving 1K req/s uses about 8% of a single Core.</p>
+
+<p><img src="./Go microservices, part 2 - building our first service _ Callista Enterprise_files/part2-performance.png" alt="performance">
+Note sure how Gatling rounds sub-millisecond latencies, but mean latency is reported as 0 ms with <em>one</em> request taking a whopping 11 millisecond. At this point, our “Accountservice” is performing admirably, serving on average 745~req/s in the sub-millisecond range.</p>
+
+<h2>What’s next?</h2>
+<p>In the <a href="http://callistaenterprise.se/blogg/teknik/2017/02/27/go-blog-series-part3">next part</a>, we’ll actually make our <em>accountservice</em> do something useful. We’ll add a simple embedded database with Account objects that we’ll serve over HTTP. We’ll also take a look at JSON serialization and check how these additions to the service affects its footprint and performance.</p>
+
+
+
+
+
+
+
+
+
+            <div class="ce-blog-thanks">
+              Tack för att du läser Callista Enterprise blogg. <br>
+              Hjälp oss att nå ut med information genom att dela nyheter och artiklar i ditt nätverk.<br>
+            </div>
+
+            
+
+
+    
+<div class="ce-blog-share">
+    <a class="ce-blog-share-element social-twitter" href="https://twitter.com/intent/tweet?text=Go%20Blog%20Series%20Part2&amp;url=http://callistaenterprise.se/blogg/teknik/2017/02/21/go-blog-series-part2/&amp;via=callistaent&amp;hashtags=" target="_blank" title="Share this post on Twitter"></a>
+    <a class="ce-blog-share-element social-facebook" href="https://www.facebook.com/sharer/sharer.php?t=Go%20Blog%20Series%20Part2&amp;u=http://callistaenterprise.se/blogg/teknik/2017/02/21/go-blog-series-part2/" target="_blank" title="Share this post on Facebook"></a>
+    <a class="ce-blog-share-element social-linkedin" href="http://www.linkedin.com/shareArticle?mini=true&amp;title=Go%20Blog%20Series%20Part2&amp;url=http://callistaenterprise.se/blogg/teknik/2017/02/21/go-blog-series-part2/&amp;source=http%3a%2f%2fzhangwenli.com" target="_blank" title="Share this post on LinkedIn"></a>
+</div>
+    
+        </article>
+    </div>
+</section>
+
+
+<section class="ce-section">
+    <heading>
+        <h1>Kommentarer</h1>
+    </heading>
+    <div class="ce-content">
+        <div id="disqus_thread"><iframe id="dsq-app5113" name="dsq-app5113" allowtransparency="true" frameborder="0" scrolling="no" tabindex="0" title="Disqus" width="100%" src="./Go microservices, part 2 - building our first service _ Callista Enterprise_files/saved_resource.html" style="width: 1px !important; min-width: 100% !important; border: none !important; overflow: hidden !important; height: 726px !important;" horizontalscrolling="no" verticalscrolling="no"></iframe></div>
+        <script src="./Go microservices, part 2 - building our first service _ Callista Enterprise_files/disqus.js"></script>
+    </div>
+</section>
+
+
+    </div>
+
+    <footer class="ce-footer">
+    <div class="ce-wrapper">
+        <nav class="ce-menu-footer-primary">
+            <h2><a href="http://callistaenterprise.se/">Callista Enterprise</a></h2>
+            <ul>
+                
+                <li><a href="http://callistaenterprise.se/om/">Om oss</a></li>
+                
+                <li><a href="http://callistaenterprise.se/erbjudanden/">Erbjudanden</a></li>
+                
+                <li><a href="http://callistaenterprise.se/event/">Event</a></li>
+                
+                <li><a href="http://callistaenterprise.se/blogg/">Blogg</a></li>
+                
+            </ul>
+        </nav>
+        <div class="ce-addresses">
+            <div class="ce-address">
+                <h2>Stockholm</h2>
+                <address>
+                    Drottninggatan 55<br>
+                    111 21 Stockholm<br>
+                    Tel:
+                    <a href="tel:+468214101">
+                        +46 8 21 41 01
+                    </a>
+                </address>
+            </div>
+            <div class="ce-address">
+                <h2>Göteborg</h2>
+                <address>
+                    Fabriksgatan 13<br>
+                    412 50 Göteborg<br>
+                    Tel:
+                    <a href="tel:+4631131767">
+                        +46 31 13 17 67
+                    </a>
+                </address>
+            </div>
+        </div>
+        <div class="ce-social">
+            <h2>Följ oss</h2>
+            <ul>
+                <li>
+                    <a href="http://twitter.com/callistaent">
+                        <img alt="Twitters logotype" src="./Go microservices, part 2 - building our first service _ Callista Enterprise_files/twitter.png">
+                        <span>@callistaent</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        <nav class="ce-menu-footer-secondary">
+            <ul>
+                
+                <li><a href="http://callistaenterprise.se/english/">English</a></li>
+                
+                <li><a href="http://callistaenterprise.se/om/jobb/">Bli en av oss</a></li>
+                
+                <li><a href="http://callistaenterprise.se/om/#kontakt">Kontakt</a></li>
+                
+            </ul>
+        </nav>
+        <small>© 2018 Callista Enterprise AB</small>
+        <hr style="margin: 1em 0 2em 0">
+        <div class="ce-footer-images">
+          <div class="ce-footer-image">
+            <a class="ce-raddabarnen" href="http://www.raddabarnen.se/foretag">
+                <img alt="Callista Enterprise är Rädda Barnens företagsvän 2018" src="./Go microservices, part 2 - building our first service _ Callista Enterprise_files/raddabarnen_2018_468x60.jpg">
+            </a>
+          </div>
+        </div>
+        <br>
+        <div class="ce-footer-images">
+          <div class="ce-footer-image">
+            <a class="ce-superforetagen" href="https://www.bisnode.com/sverige/nyheter-inspiration/superforetagen/#year=2015&amp;page=1">
+              <img alt="Callista Enterprise utsett till VA Superföretag 2015" src="./Go microservices, part 2 - building our first service _ Callista Enterprise_files/vas-superforetagen-2015_trans_500x500.png">
+            </a>
+          </div>
+          <div class="ce-footer-image">
+            <a class="ce-di-gasell" href="http://www.di.se/gasell/">
+              <img alt="Callista Enterprise utsett till DI Gasell 2016" src="./Go microservices, part 2 - building our first service _ Callista Enterprise_files/di_gasell_180x194.png">
+            </a>
+          </div>
+        </div>
+    </div>
+</footer>
+
+
+    <script src="./Go microservices, part 2 - building our first service _ Callista Enterprise_files/jquery.min.js"></script>
+    <script src="./Go microservices, part 2 - building our first service _ Callista Enterprise_files/owl.carousel.min.js"></script>
+    <script src="./Go microservices, part 2 - building our first service _ Callista Enterprise_files/prismjs.min.js"></script>
+    <script src="./Go microservices, part 2 - building our first service _ Callista Enterprise_files/app.js"></script>
+    <script src="./Go microservices, part 2 - building our first service _ Callista Enterprise_files/analytics(1).js"></script>
+
+
+
+<iframe style="display: none;" src="./Go microservices, part 2 - building our first service _ Callista Enterprise_files/saved_resource(1).html"></iframe></body></html>
