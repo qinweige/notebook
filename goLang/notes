@@ -1,0 +1,6 @@
+
+1. Convert string to io.reader
+    strings.NewReader("convert to io reader")
+
+2. New custom error
+    errors.New("new error")

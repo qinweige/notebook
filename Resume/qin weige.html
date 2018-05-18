@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>qin weige.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: "Segoe WPC", "Segoe UI", "SFUIText-Light", "HelveticaNeue-Light", sans-serif, "Droid Sans Fallback";
+	font-size: 14px;
+	padding: 0 12px;
+	line-height: 22px;
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	color: #4080D0;
+	text-decoration: none;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+h1 code,
+h2 code,
+h3 code,
+h4 code,
+h5 code,
+h6 code {
+	font-size: inherit;
+	line-height: auto;
+}
+
+a:hover {
+	color: #4080D0;
+	text-decoration: underline;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left: 5px solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 14px;
+	line-height: 19px;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+.mac code {
+	font-size: 12px;
+	line-height: 18px;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+/** Theming */
+
+.vscode-light,
+.vscode-light pre code {
+	color: rgb(30, 30, 30);
+}
+
+.vscode-dark,
+.vscode-dark pre code {
+	color: #DDD;
+}
+
+.vscode-high-contrast,
+.vscode-high-contrast pre code {
+	color: white;
+}
+
+.vscode-light code {
+	color: #A31515;
+}
+
+.vscode-dark code {
+	color: #D7BA7D;
+}
+
+.vscode-light pre:not(.hljs),
+.vscode-light code > div {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre:not(.hljs),
+.vscode-dark code > div {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre:not(.hljs),
+.vscode-high-contrast code > div {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+.vscode-light blockquote,
+.vscode-dark blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.vscode-high-contrast blockquote {
+	background: transparent;
+	border-color: #fff;
+}
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family:  "Meiryo", "Segoe WPC", "Segoe UI", "SFUIText-Light", "HelveticaNeue-Light", sans-serif, "Droid Sans Fallback";
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+</head>
+<body>
+<h2 id="%E8%81%94%E7%B3%BB%E6%96%B9%E5%BC%8F">联系方式</h2>
+<p>手机：135********   |  Email：wgqin1@e.ntu.edu.sg | 微信号：qinweige0123</p>
+<hr>
+<h2 id="%E4%B8%AA%E4%BA%BA%E4%BF%A1%E6%81%AF">个人信息</h2>
+<ul>
+<li>
+<p>秦伟格 / 男 / 1990</p>
+</li>
+<li>
+<p>本科 / 新加坡南洋理工大学，全额奖学金入学 一等荣誉学位毕业</p>
+</li>
+<li>
+<p>研究生 / 新加坡国立大学</p>
+</li>
+<li>
+<p>工作年限：4年</p>
+</li>
+<li>
+<p>技术博客：https://segmentfault.com/u/shoushouya</p>
+</li>
+<li>
+<p>Github：https://github.com/qinweige</p>
+</li>
+<li>
+<p>期望职位：Web后端/全栈高级程序员，应用架构师</p>
+</li>
+</ul>
+<hr>
+<h2 id="%E5%B7%A5%E4%BD%9C%E7%BB%8F%E5%8E%86">工作经历</h2>
+<h3 id="red-dot-payment-singapore%EF%BC%88-2017%E5%B9%B48%E6%9C%88-2018%E5%B9%B49%E6%9C%88-phpgo%EF%BC%89">Red dot payment Singapore（ 2017年8月 ~ 2018年9月 php/go）</h3>
+<h4 id="%E6%94%AF%E4%BB%98%E6%A0%B8%E5%BF%83%E7%B3%BB%E7%BB%9F%E9%87%8D%E6%9E%84">支付核心系统重构</h4>
+<ul>
+<li>参与微服务架构的模块重建，负责信用卡支付服务模块RESTful API设计，编写和测试。</li>
+<li>快速学习golang语言，结合视频，书籍和开源项目写出高效健壮的代码。</li>
+<li>移植一些之前学到的设计模式到新的语言中，并成功对项目重构 （例如装饰者模式对卡信息的层层处理）</li>
+</ul>
+<h4 id="%E4%BF%A1%E7%94%A8%E5%8D%A1%E6%AC%BA%E8%AF%88%E4%BE%A6%E6%B5%8B%E6%A8%A1%E5%9D%97%E9%9B%86%E6%88%90">信用卡欺诈侦测模块集成</h4>
+<ul>
+<li>集成第三方欺诈检测API，支付核心系统中加入逻辑代码。</li>
+<li>控制后台加入欺诈检测设置和显示模块，生成导出文件，定时任务给商家发送检测结果和报告附件的邮件</li>
+<li>学习并使用AWS上的cloud watch，lambda function。</li>
+<li>商家每天会收到欺诈检测的结果，对我们的支付更放心。同时重新设计控制后台的前端效果，使其更美观。</li>
+</ul>
+<h4 id="%E5%95%86%E6%97%85%E5%B9%B3%E5%8F%B0%E4%BB%A3%E6%94%AF%E4%BB%98%E9%A1%B9%E7%9B%AE">商旅平台代支付项目</h4>
+<ul>
+<li>集成航空订票网站的支付系统，同时更新商旅平台的记录信息。并在控制后台中显示。</li>
+<li>设计项目流程图，确定支付模块的接入和相应流程。</li>
+<li>快速明白其他公司的需求和自己的任务，和两家公司沟通和联系一起完成平台支付和更新数据工作。</li>
+</ul>
+<h3 id="besi-apple%E8%8A%AF%E7%89%87%E5%8A%A0%E5%B7%A5%E4%BB%AA%E5%99%A8%E7%A0%94%E5%8F%91%E5%95%86-%EF%BC%88-2015%E5%B9%B45%E6%9C%88-2017%E5%B9%B47%E6%9C%88-c%EF%BC%89">BESI <em>*apple芯片加工仪器研发商</em>* （ 2015年5月 ~ 2017年7月 C++）</h3>
+<h4 id="%E6%9C%BA%E6%A2%B0%E8%87%82%E6%B5%81%E7%A8%8B%E4%BC%98%E5%8C%96">机械臂流程优化</h4>
+<ul>
+<li>优化机器最核心的机械臂流程，从前端的设置到后端的控制改变。</li>
+<li>设计模块逻辑，分析其他模块的交互影响。更新流程图和状态图</li>
+<li>成功完成机械臂流程的优化，实验证明芯片的位置准确度提高15%</li>
+</ul>
+<h4 id="%E5%AE%8C%E5%96%84%E8%BF%90%E8%BE%93%E5%8F%B0%E7%B3%BB%E7%BB%9F">完善运输台系统</h4>
+<ul>
+<li>运输台停止或错误移动问题时常发生，完善和修复运输台系统，使仪器运行更稳定。</li>
+<li>通过实验和分析总结找到问题的关键，结合实际系统的流程提出解决方案。</li>
+<li>代码中实现对运输台的修复，同时增加错误处理来预防其他问题。</li>
+</ul>
+<h3 id="emas%E5%85%AC%E5%8F%B8%EF%BC%88-2014%E5%B9%B48%E6%9C%88-2017%E5%B9%B44%E6%9C%88-%EF%BC%89">EMAS公司（ 2014年8月 ~ 2017年4月 ）</h3>
+<h4 id="%E5%B7%A5%E7%A8%8B%E9%A1%B9%E7%9B%AE%E8%AE%A1%E7%AE%97%E5%88%86%E6%9E%90">工程项目计算分析</h4>
+<ul>
+<li>用脚本语言对工程项目建模，分析并得出结果。</li>
+</ul>
+<hr>
+<h2 id="%E5%BC%80%E6%BA%90%E9%A1%B9%E7%9B%AE%E5%92%8C%E6%8A%80%E8%83%BD">开源项目和技能</h2>
+<ul>
+<li>个人仓库。（清单，笔记，博客，音乐播放）</li>
+</ul>
+<h3 id="%E6%8A%80%E6%9C%AF%E6%96%87%E7%AB%A0">技术文章</h3>
+<ul>
+<li><a href="http://get.jobdeer.com/706.get">一个产品经理眼中的云计算：前生今世和未来</a></li>
+<li><a href="https://segmentfault.com/blog/microgo">翻译-基于go的微服务搭建</a></li>
+</ul>
+<h2 id="%E6%8A%80%E8%83%BD%E6%B8%85%E5%8D%95">技能清单</h2>
+<p>以下均为我熟练使用的技能</p>
+<ul>
+<li>Web开发：PHP/GoLang</li>
+<li>Web框架：codeIgniter/Laravel</li>
+<li>前端框架：Bootstrap/VueJs</li>
+<li>数据库相关：MySQL/Redis</li>
+<li>版本管理、文档和自动化部署工具：Git/Composer/AWS云服务</li>
+<li>单元测试：PHPUnit</li>
+</ul>
+
+</body>
+</html>
