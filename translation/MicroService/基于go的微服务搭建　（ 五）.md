@@ -27,7 +27,7 @@
 * 任务: 一个任务可以是docker容器,docker文件定义任务为:拥有并运行docker容器和指令.manager节点分发任务给worker节点的服务.
 下图展示一个简单的微服务框架.两个服务accountservice和quotes-service抽象为两个节点,运行在五个容器的实例中.
 
-[!img](img/)
+[!img](img/part5-swarm-overview.png)
 
 ###代码
 ---
@@ -72,12 +72,34 @@ export GOOS=darwin
 ----
 现在我们创建第一个docker镜像,包含我们的执行文件.去accountservice的上层文件夹,就是$GOPATH/src/github.com/callistaenterprise/goblog.
 对于docker镜像,我们经常用一个前缀来标注名字.我经常用我的github名字作为前缀,例如eriklupander/myservicename.这里,我用someprefix作为前缀.执行下面的命令来创建Docker镜像:
-!!!!code
+```
+> docker build -t someprefix/accountservice accountservice/
+
+Sending build context to Docker daemon 13.17 MB
+Step 1/4 : FROM iron/base
+ ---> b65946736b2c
+Step 2/4 : EXPOSE 6767
+ ---> Using cache
+ ---> f1147fd9abcf
+Step 3/4 : ADD accountservice-linux-amd64 /
+ ---> 0841289965c6
+Removing intermediate container db3176c5e1e1
+Step 4/4 : ENTRYPOINT ./accountservice-linux-amd64
+ ---> Running in f99a911fd551
+ ---> e5700191acf2
+Removing intermediate container f99a911fd551
+Successfully built e5700191acf2
+```
 
 好了,我们有啦一个someprefix/accountservice镜像.如果我们要在多节点下运行或者分享镜像,我们可以用docker push来使我们的镜像被别的主机pull.
 我们现在运行镜像:
 
-!!!code
+```
+> docker run --rm someprefix/accountservice
+Starting accountservice
+Seeded 100 fake accounts...
+2017/02/05 11:52:01 Starting HTTP service at 6767
+```
 
 然而,我们的容器不是在你的主机系统下运行,他运行在自己的网络中,我们不能直接从我们的主机来请求他.有办法来解决这个问题,但现在我们放一放,我们继续组建我们的docker swarm和部署accountservice.
 
@@ -144,7 +166,7 @@ docker service create \
 ```
 这将在8000端口产生一个服务.让我们用浏览器浏览http://$ManagerIP:8000
 
-[!img](img/)
+[!img](img/part5-viz.png)
 
 ###额外内容
 ----
@@ -159,7 +181,7 @@ docker service create \
 ```
 浏览 http://$ManagerIP:6969
 
-[!img](img/)
+[!img](img/part5-dvizz.png)
 
 ###加入quote-service
 只有一个服务的微服务不能看出微服务的全貌.让我们部署一个基于spring boot的quotes-service.我把这个容器镜像放在docker hub中的eriklupander/quotes-service.
@@ -168,7 +190,9 @@ docker service create \
 ```
 如果你输入docker ps来看那些docker容器在运行:
 ```
-code
+> docker ps
+CONTAINER ID    IMAGE                       COMMAND                 CREATED         STATUS                           PORTS                                           NAMES
+98867f3514a1    eriklupander/quotes-service "java -Djava.security"  12 seconds ago  Up 10 seconds
 ```
 注意,我们没有暴露一个外界端口给这个服务,所以我们只能在集群内部的端口8080内请求.我们会集成这个服务在第七部分同时看一下服务探索和负载均衡.
 如果你加入了dvizz,你应该能看到quotes-service和accountservice
@@ -203,19 +227,26 @@ cpu使用率和内存使用会用 docker stats来收集.我们也会用gatling�
 ```
 ####内存使用率
 ```
-code
+> docker stats $(docker ps | awk '{if(NR>1) print $NF}')
+
+CONTAINER                                    CPU %               MEM USAGE / LIMIT    
+accountservice.1.k8vyt3dulvng9l6y4mj14ncw9   0.00%               5.621 MiB / 1.955 GiB
+quotes-service.1.h07fde0ejxru4pqwwgms9qt00   0.06%               293.9 MiB / 1.955 GiB
 ```
 启动后,包含linux和我们accountservice的容器用5.6mb的内存,java开发的quotes-service用了300mb.虽然这可以通过调整jvm来降低.
 
 ###cpu和内存使用压力测试
 ----
-[!img](img/)
+```
+CONTAINER                                    CPU %               MEM USAGE / LIMIT   
+accountservice.1.k8vyt3dulvng9l6y4mj14ncw9   25.50%              35.15 MiB / 1.955 GiBB
+```
 ----
 在1K req/s下,虚拟机中运行的swarm和在第二三节中的OS x系统相比,内存稍微升高,cpu大略相同.
 
 ####性能
 ----
-[!img]()
+[!img](img/part5-performance.png)
 ----
 延迟上升到4ms.这和直接运行有所升高,原因有几点.我认为gatling测试通过桥接的网络和swarm上的路由会有一些延迟.但是4ms的延迟也不错.毕竟我们从boltDB读数据,序列化到json并输出到HTTP.
 

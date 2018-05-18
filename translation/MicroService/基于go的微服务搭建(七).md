@@ -1,5 +1,9 @@
 第七节: 服务发现和负载均衡
 
+[原文地址](http://callistaenterprise.se/blogg/teknik/2017/02/17/go-blog-series-part1/)
+
+转载请注明原文及[翻译地址](https://segmentfault.com/u/shoushouya)
+
 这篇文章将关注两个微服务架构的重要部分:服务发现和负载均衡.和他们是如何帮助我们2017年经常要求的横向扩展容量的
 
 ###简介
@@ -15,10 +19,10 @@
 ----
 为服务实现中,我们把负载均衡分为两种:
 * 客户端:客户端自己请求一个发现服务来得到地址(iP, 主机名,端口).从这里面,他们可以随机或者round-robin方法来选择一个地址.为了不用每次都从发现服务里提取,每个客户端会保存一些缓存,同时随着发现服务更新.客户端负载均衡在spring cloud生态里的例子是netflix ribbon.在go-kit中相似的是etcd.客户端负载均衡的优势是去除中心化,没有中心的瓶颈,因为每个服务保存他们自己的注册器.缺点是内部服务复杂化和本地注册器包含不良路径的风险.
-[!img](img/)
+[!img](img/part7-clientsidelb.png)
 
 * 服务器段:这个模型中,客户端依赖负载均衡器来找到想请求服务的名字.这个模型通常成为代理模式,因为它的作用可以使负载均衡也可以是反向代理.这边的有点是简单,负载均衡和服务发现机制通常包含在容器部署里,你不需要安装和管理这些部分.同样,我们的服务不需要知道服务注册器,负载均衡器会帮助我们.所有的请求都通过复杂均衡器将会使他成为瓶颈.
-[!img](img/)
+[!img](img/serversidelb.png)
 
 当我们用docker swarm的服务,服务器端真正的服务(producer service)注册是完全透明给开发者的.也就是说,我们的服务不知道他们在服务器端负载均衡下运行,docker swarm完成整个注册/heartbeat/解除注册.
 ###使用服务发现信息
@@ -51,7 +55,34 @@ type Account struct {
 ```
 打开handlers.go,加入GetIp()函数,让他输出ServedBy的值:
 ```
-code
+func GetAccount(w http.ResponseWriter, r *http.Request) {
+    
+	// Read the 'accountId' path parameter from the mux map
+	var accountId = mux.Vars(r)["accountId"]
+    
+    // Read the account struct BoltDB
+	account, err := DBClient.QueryAccount(accountId)
+    
+    account.ServedBy = getIP()      // NEW, add this line
+    ...
+}
+
+// ADD THIS FUNC
+func getIP() string {
+        addrs, err := net.InterfaceAddrs()
+        if err != nil {
+                return "error"
+        }
+        for _, address := range addrs {
+                // check the address type and if it is not a loopback the display it
+                if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+                        if ipnet.IP.To4() != nil {
+                                return ipnet.IP.String()
+                        }
+                }
+        }
+        panic("Unable to determine local IP address (non loopback). Exiting.")
+}
 ```
 getIp()函数应该用一些utils包,因为这些可以重复用,当我们需要判断一个运行服务的non-loopback ip地址.
 重新编译和部署我们的服务
@@ -60,11 +91,15 @@ getIp()函数应该用一些utils包,因为这些可以重复用,当我们需要
 ```
 等到结束,输入
 ```
-code
+> docker service ls
+ID            NAME             REPLICAS  IMAGE
+yim6dgzaimpg  accountservice   1/1       someprefix/accountservice
 ```
 用curl
 ```
-code
+> curl $ManagerIP:6767/accounts/10000
+{"id":"10000","name":"Person_0","servedBy":"10.255.0.5"}  
+
 ```
 现在我们看到回复中有容器的ip地址,然我们扩展这些服务
 ```
@@ -73,11 +108,23 @@ accountservice scaled to 3
 ```
 等一会运行
 ```
-code
+> docker service ls
+ID            NAME             REPLICAS  IMAGE
+yim6dgzaimpg  accountservice   3/3       someprefix/accountservice
 ```
 现在有三个实例,我们curl几次,看一看得到的ip地址
 ```
-code
+curl $ManagerIP:6767/accounts/10000
+{"id":"10000","name":"Person_0","servedBy":"10.0.0.22"}
+
+curl $ManagerIP:6767/accounts/10000
+{"id":"10000","name":"Person_0","servedBy":"10.255.0.5"}
+
+curl $ManagerIP:6767/accounts/10000
+{"id":"10000","name":"Person_0","servedBy":"10.0.0.18"}
+
+curl $ManagerIP:6767/accounts/10000
+{"id":"10000","name":"Person_0","servedBy":"10.0.0.22"}
 ```
 我们看到四次请求用round-robin的方法分给每一个实例.这种swarm提供的服务很好,因为它很方便,我们也不需要像客户端发现服务那样从一堆ip地址中选择一个.而且,swarm不会把请求发送给那些拥有healthcheck方法,却没有报告他们健康的节点.当你扩容和缩减很频繁时,同时你的服务很复杂,需要比accountservice启动多很多的时间的时候,这将会很重要.
 
@@ -90,15 +137,22 @@ code
 
 ####cpu和内存使用率
 gatling测试(1k req/s)
-[!img](img/)
+
+```
+CONTAINER                                    CPU %               MEM USAGE / LIMIT       
+accountservice.3.y8j1imkor57nficq6a2xf5gkc   12.69%              9.336 MiB / 1.955 GiB 
+accountservice.2.3p8adb2i87918ax3age8ah1qp   11.18%              9.414 MiB / 1.955 GiB 
+accountservice.4.gzglenb06bmb0wew9hdme4z7t   13.32%              9.488 MiB / 1.955 GiB 
+accountservice.1.y3yojmtxcvva3wa1q9nrh9asb   11.17%              31.26 MiB / 1.955 GiB
+```
 
 我们的四个实例平分这些工作,这三个新的实例用低于10mb的内存,在低于250 req/s情况下.
 ####性能
 一个实例的gatling测试
-[!img](img/)
+[!img](img/part6-performance1.png)
 
 四个实例的gatling测试
-[!img](img/)
+[!img](img/part6-performance4.png)
 
 区别不大,本该这样.因为我们的四个实例也是在同一个虚拟机硬件上运行的.如果我们给swarm分配一些主机还没用的资源,我们会看到延迟下降的.我们看到一点小小的提升,在95和99平均延迟上.我们可以说,swarm负载均衡没有对性能有负面影响.
 
@@ -107,22 +161,61 @@ gatling测试(1k req/s)
 记得我们的基于java的quotes-service么?让我们扩容他并且从accountservice请求他,用服务名quotes-service.目的是看一看我们只知道名字的时候,服务发现和负载均衡好不好用.
 我们先修改一下account.go
 ```
-code
+ type Account struct {
+         Id string `json:"id"`
+         Name string  `json:"name"`
+         ServedBy string `json:"servedBy"`
+         Quote Quote `json:"quote"`         // NEW
+ }
+ 
+ // NEW struct
+ type Quote struct {
+         Text string `json:"quote"`
+         ServedBy string `json:"ipAddress"`
+         Language string `json:"language"`
+ }
 ```
 我们用json标签来转换名称,从quote到text,ipAddress到ServedBy.
 更改handler.go.我们加一个简单的getQuote函数来请求http://quotes-service:8080/api/quote,返回值用来输出新的Quote结构.我们在GetAccount函数中请求他.
 首先,我们处理连接,keep-alive将会有负载均衡的问题,除非我们更改go的http客户端.在handler.go中,加入:
 ```
-code
+var client = &http.Client{}
+
+func init() {
+        var transport http.RoundTripper = &http.Transport{
+                DisableKeepAlives: true,
+        }
+        client.Transport = transport
+}
 ```
 init方法确保发送的http请求有合适的头信息,能使swarm的负载均衡正常工作.在GetAccount函数下,加入getQuote函数
 ```
-code
+func getQuote() (model.Quote, error) {
+        req, _ := http.NewRequest("GET", "http://quotes-service:8080/api/quote?strength=4", nil)
+        resp, err := client.Do(req)
+
+        if err == nil && resp.StatusCode == 200 {
+                quote := model.Quote{}
+                bytes, _ := ioutil.ReadAll(resp.Body)
+                json.Unmarshal(bytes, &quote)
+                return quote, nil
+        } else {
+                return model.Quote{}, fmt.Errorf("Some error")
+        }
+}
 ```
 没什么特别的,?strength=4是让quotes-service api用多少cpu.如果请求错误,返回一个错误.
 我们从GetAccount函数中请求getQuote函数,把Account实例返回的值附给Quote.
 ```
-code
+// Read the account struct BoltDB
+account, err := DBClient.QueryAccount(accountId)
+account.ServedBy = getIP()
+
+// NEW call the quotes-service
+quote, err := getQuote()
+if err == nil {
+        account.Quote = quote
+}
 ```
 ###unit testing发送的http请求
 ----
@@ -138,27 +231,55 @@ func inti() {
 ```
 gock DSL提供很好地控制给期待的外部http请求和回复.在下面的例子中,我们用New(), Get()和MatchParam()来让gock期待http://quotes-service:8080/api/quote?strength=4 Get 请求,回复http 200和json字符串.
 ```
-code
+func TestGetAccount(t *testing.T) {
+        defer gock.Off()
+        gock.New("http://quotes-service:8080").
+                Get("/api/quote").
+                MatchParam("strength", "4").
+                Reply(200).
+                BodyString(`{"quote":"May the source be with you. Always.","ipAddress":"10.0.0.5:8080","language":"en"}`)
 ```
 defer gock.Off()确保我们的test会停止http获取,因为gock.New()会开启http获取,这可能会是后来的测试失败.
 然我们断言返回的quote
 ```
-code
+Convey("Then the response should be a 200", func() {
+        So(resp.Code, ShouldEqual, 200)
+
+        account := model.Account{}
+        json.Unmarshal(resp.Body.Bytes(), &account)
+        So(account.Id, ShouldEqual, "123")
+        So(account.Name, ShouldEqual, "Person_123")
+        
+        // NEW!
+        So(account.Quote.Text, ShouldEqual, "May the source be with you. Always.")
+})
 ```
 
 ###跑测试
 是指跑一下accountservice下所有的测试
 重新部署用./copyall.sh,试着curl
 ```
-code
+> go test ./...
+?   	github.com/callistaenterprise/goblog/accountservice	[no test files]
+?   	github.com/callistaenterprise/goblog/accountservice/dbclient	[no test files]
+?   	github.com/callistaenterprise/goblog/accountservice/model	[no test files]
+ok  	github.com/callistaenterprise/goblog/accountservice/service	0.011s
 ```
+```
+> curl $ManagerIP:6767/accounts/10000
+  {"id":"10000","name":"Person_0","servedBy":"10.255.0.8","quote":
+      {"quote":"You, too, Brutus?","ipAddress":"461caa3cef02/10.0.0.5:8080","language":"en"}
+  }
+  ```
 扩容quotes-service
 ```
 > docker service scale quotes-service=2
 ```
 对于spring boot的quotes-service来说,需要15-30s,不像go那样快.我们curl几次
 ```
-code
+{"id":"10000","name":"Person_0","servedBy":"10.255.0.15","quote":{"quote":"To be or not to be","ipAddress":"768e4b0794f6/10.0.0.8:8080","language":"en"}}
+{"id":"10000","name":"Person_0","servedBy":"10.255.0.16","quote":{"quote":"Bring out the gimp.","ipAddress":"461caa3cef02/10.0.0.5:8080","language":"en"}}
+{"id":"10000","name":"Person_0","servedBy":"10.0.0.9","quote":{"quote":"You, too, Brutus?","ipAddress":"768e4b0794f6/10.0.0.8:8080","language":"en"}}
 ```
 我们看到我们的servedBy循环用accountservice实例.我们也看到quote的ip地址有两个.如果我们没有关闭keep-alive,我们可能只会看到一个quote-service实例
 

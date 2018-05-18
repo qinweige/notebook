@@ -4,7 +4,8 @@
 
 下面这张图就是我们将要搭建的项目的概览图。我们将开始写第一个微服务之后我们会一点点完成这张图的所有内容。
 
-![img](https://github.com/qinweige/notebook/blob/master/%E5%BE%AE%E6%9C%8D%E5%8A%A1%E7%BF%BB%E8%AF%91/img/part-1-stats.png)
+![img](img/part1-overview.png)
+
 
 讲解：
 白色虚线的方框内：　docker swarm集群，运行在一个或多个节点上。
