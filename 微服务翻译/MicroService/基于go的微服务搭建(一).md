@@ -4,7 +4,7 @@
 
 下面这张图就是我们将要搭建的项目的概览图。我们将开始写第一个微服务之后我们会一点点完成这张图的所有内容。
 
-[!img](img/part1-overview.png)
+![img](https://github.com/qinweige/notebook/blob/master/%E5%BE%AE%E6%9C%8D%E5%8A%A1%E7%BF%BB%E8%AF%91/img/part-1-stats.png)
 
 讲解：
 白色虚线的方框内：　docker swarm集群，运行在一个或多个节点上。
@@ -13,7 +13,6 @@
 
 ###运行资源消耗
 ----
-
 为什么我们要用go来写微服务？除啦有意思和有效率，另一个主要原因是go在运行时消耗的内存非常小。下面这张图对比了Spring boot,Spring cloud和go.(都是基于运行在docker swarm上的微服务)
 
 [!img](img/part-1-stats.png)
