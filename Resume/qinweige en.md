@@ -8,7 +8,7 @@ mobile : +65 93649371   |  Email : wgqin1@e.ntu.edu.sg
  - Undergraduate / Nanyang Technological University. First class honor with full scholarship
  - Master degree / National University of Singapore
  - Working duration : 4 years
- 
+ - Expected position : Backend/Fullstack senior software engineer
  
 ---
 
@@ -43,11 +43,14 @@ and UATP(Universal air travel port).
 * Provided support to client companies and end-users in China, Europe and Korea.
 * Git version control and software scrum process experience
 
+#### Blog
+- [Personal blog](https://segmentfault.com/u/shoushouya)
+- [Translation-Microservice in go](https://segmentfault.com/blog/microgo) 
 
-## Highlight
+## Skill
 
-- Web dev : PHP/GoLang
-- Web framework : codeIgniter/Laravel
+- Backend language : GoLang/PHP/C++
 - Frontend : Bootstrap/VueJs
 - Database : MySQL/Redis
-- tools : Git/AWS
+- Tools : Git/Linux/AWS/Docker
+- Testing : Unit testing/Integration testing/Behavior driven testing
